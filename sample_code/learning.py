@@ -165,9 +165,29 @@ class DecisionTree:
         return self
 
     def outputDecisionTree(self, path):
-        # implement this function
-        with open(path, 'w') as f:
-            print >>f, " "      
+        tab = lambda indent : ' ' *(indent*4)
+
+        f = open(path, 'w')
+        print >> f, 'def predict(example):'
+
+        # recursive code gen subroutine
+        def gen_rec(self, f, indent):
+            name = self.attr
+            elseif = False
+            for (val, subtree) in self.branches.items():
+                print >> f, '{2}{3} example[{0}] == {1}:' \
+                        .format(name, val, tab(indent), 'elif' if elseif else 'if')
+
+                if not elseif:
+                    elseif = True
+                        
+                if isinstance(subtree, DecisionTree):
+                    gen_rec(subtree, f, indent+1)
+                else:
+                    print >> f, "{1}return '{0}'".format(subtree, tab(indent+1))
+            
+        gen_rec(self, f, 1)
+        f.close()
 
     def count_nodes(self):
         cnt = 1
