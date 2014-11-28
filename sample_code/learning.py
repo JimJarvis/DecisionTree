@@ -253,6 +253,9 @@ class DecisionTreeLearner(Learner):
             for (val, subtree) in dt.branches.items():
                 if isinstance(subtree, DecisionTree):
                     subexs = filter(lambda ex : ex[dt.attr]==val, exs)
+                    
+                    prune_rec(subtree, subexs, maxDeviation)
+
                     expected = distr(subexs)
                     chi2 = 0
                     for _, exs_i in self.split_by(subtree.attr, subexs):
@@ -266,8 +269,6 @@ class DecisionTreeLearner(Learner):
                     # we prune if not statistically significant
                     if chi2 < maxDeviation:
                         dt.add(val, self.majority_value(subexs))
-                    else:
-                        prune_rec(subtree, subexs, maxDeviation)
                         
 
         prune_rec(self.dt, exs, maxDeviation)
