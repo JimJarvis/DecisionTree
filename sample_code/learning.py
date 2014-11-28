@@ -2,6 +2,7 @@
 
 from utils import *
 import agents, random, operator
+from collections import Counter
 
 #______________________________________________________________________________
 
@@ -204,7 +205,48 @@ class DecisionTreeLearner(Learner):
     
     def prune(self, dataset, maxDeviation):
         # Your implementation
-        return
+        exs = dataset.examples
+        tar = dataset.target
+        
+        # histogram
+        def hist(exs):
+            h = Counter() # hist distr
+            for ex in exs:
+                h[ex[tar]] += 1
+            return dict(h)
+        
+        # distribution: histogram/sum
+        def distr(exs):
+            h = hist(exs)
+            total = sum(h.values())*1.0
+            return {k : h[k]/total for k in h }
+
+        outvals = dataset.values[tar]
+        print dataset.inputs
+
+        def prune_rec(dt, exs, maxDeviation):
+            expected = distr(exs)
+            chi2 = 0
+            for _, exs_i in self.split_by(dt.attr, exs):
+                actual = hist(exs_i)
+                n = sum(actual.values())*1.0
+                expc = { out : n * expected.get(out, 1e-4) for out in outvals }
+                chi2 += sum([(actual.get(out, 0) - expc[out])**2 / expc[out] 
+                             for out in outvals])
+            # we prune if not statistically significant
+            if chi2 < maxDeviation:
+                pass
+
+            for (val, subtree) in dt.branches.items():
+                #dt.add(val, self.majority_value(exs))
+                if isinstance(subtree, DecisionTree):
+                    prune_rec(subtree, exs, maxDeviation)
+                else:
+                    #print 'RESULT = ', subtree
+                    pass
+        prune_rec(self.dt, exs, maxDeviation)
+        self.dt.display()
+
 
     def decision_tree_learning(self, examples, attrs, default=None):
         if len(examples) == 0:
