@@ -7,4 +7,5 @@ learner = DecisionTreeLearner()
 learner.train(test_set)
 learner.dt.display()
 
-learner.prune(test_set, 5)
+learner.prune(test_set, 6)
+learner.dt.display()
