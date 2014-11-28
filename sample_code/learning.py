@@ -170,7 +170,11 @@ class DecisionTree:
             print >>f, " "      
 
     def count_nodes(self):
-        return 0
+        cnt = 1
+        for _, subtree in self.branches.items():
+            if isinstance(subtree, DecisionTree):
+                cnt += subtree.count_nodes()
+        return cnt
 
     def display(self, indent=0):
         name = self.attrname

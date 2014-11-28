@@ -8,5 +8,7 @@ learner.train(test_set)
 
 learner.prune(test_set, 6)
 learner.dt.display()
+print 'node count =', learner.dt.count_nodes()
 learner.prune(test_set, 6.5)
 learner.dt.display()
+print 'node count =', learner.dt.count_nodes()
