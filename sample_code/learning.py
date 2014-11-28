@@ -222,28 +222,32 @@ class DecisionTreeLearner(Learner):
             return {k : h[k]/total for k in h }
 
         outvals = dataset.values[tar]
+        
+        chi2list = []
 
         def prune_rec(dt, exs, maxDeviation):
             for (val, subtree) in dt.branches.items():
                 if isinstance(subtree, DecisionTree):
-                    subexs = [ex for ex in exs if ex[dt.attr]==val]
+                    subexs = filter(lambda ex : ex[dt.attr]==val, exs)
                     expected = distr(subexs)
                     chi2 = 0
                     for _, exs_i in self.split_by(subtree.attr, subexs):
                         actual = hist(exs_i)
                         n = sum(actual.values())*1.0
-                        expc = { out : n * expected.get(out, 1e-4) for out in outvals }
+                        expc = { out : max(n * expected.get(out, 0), 1e-4) for out in outvals }
                         chi2 += sum([(actual.get(out, 0) - expc[out])**2 / expc[out] 
                                      for out in outvals])
 
+                    chi2list.append(chi2)
                     # we prune if not statistically significant
                     if chi2 < maxDeviation:
-                        dt.add(val, self.majority_value(exs))
-
-                    prune_rec(subtree, exs, maxDeviation)
+                        dt.add(val, self.majority_value(subexs))
+                    else:
+                        prune_rec(subtree, subexs, maxDeviation)
                         
 
         prune_rec(self.dt, exs, maxDeviation)
+        #print sorted(chi2list)
 
 
     def decision_tree_learning(self, examples, attrs, default=None):

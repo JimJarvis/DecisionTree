@@ -33,5 +33,7 @@ run_test(learner, 0, interval, 1, False, train_set, cv_set, test_set)
 # test
 print "After Pruning"
 print "========================="
-run_test(learner, 1, interval, 1, False, train_set, cv_set, test_set)
+for maxdev in [0.1 * x for x in range(10, 22)]:
+    print 'maxdev', maxdev
+    run_test(learner, maxdev, interval, 1, False, train_set, cv_set, test_set)
 
