@@ -11,10 +11,16 @@ cv_set = car_cv
 
 def run_test(learner, maxDeviation, 
 	learning_curve_interval, test_trials, random_shuffle,  
-	train_set, cv_set, test_set):
+	train_set, cv_set, test_set,
+	cv_scores=None):
 	learner.train(train_set)
 	if maxDeviation > 0 :
 		learner.prune(cv_set, maxDeviation)
+		
+	if cv_scores is not None:
+		cv_scores.append(test(learner, cv_set))
+		return  # don't print any additional info
+
 	print "Macro F1 score on test data: ", "%.5f" % test(learner, test_set)
 	res = learningcurve(learner, maxDeviation, train_set, cv_set, test_set, 
 		learning_curve_interval, test_trials, random_shuffle=random_shuffle)
@@ -30,10 +36,23 @@ print "Before Pruning"
 print "========================="
 run_test(learner, 0, interval, 1, False, train_set, cv_set, test_set)
 
+# Pruning validation: select best maxDev
+maxdev = 0
+print "Select best maxdev ="
+cv_scores = []
+sheet = []
+maxdevTrials = [0.1 * x for x in range(1, 100)]
+for maxdev in maxdevTrials:
+    run_test(learner, maxdev, interval, 1, False, train_set, cv_set, test_set, cv_scores)
+# get the best maxdev
+best_cv_score, maxdev = max(zip(cv_scores, maxdevTrials))
+
+print maxdev
+print 'Best CV score =', best_cv_score
+print ''
+
 # test
 print "After Pruning"
 print "========================="
-for maxdev in [0.1 * x for x in range(10, 22)]:
-    print 'maxdev', maxdev
-    run_test(learner, maxdev, interval, 1, False, train_set, cv_set, test_set)
+run_test(learner, maxdev, interval, 1, False, train_set, cv_set, test_set)
 
