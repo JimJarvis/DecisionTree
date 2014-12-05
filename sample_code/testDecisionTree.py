@@ -13,7 +13,7 @@ cv_set = car_cv
 # table entry: [maxdev, macro CV F1, mean node count]
 table = []
 f1graph = []
-f1sampleMaxdev = [0, 2, 3, 4] # only graph at these selected maxdevs
+f1sampleMaxdev = range(1, 5)
 
 def run_test(learner, maxDeviation, 
 	learning_curve_interval, test_trials, random_shuffle,  
